@@ -1,0 +1,18 @@
+services:
+  dev:
+    image: mcr.microsoft.com/devcontainers/php:7.4
+    environment:
+      WORDPRESS_DB_HOST: db
+      WORDPRESS_DB_USER: ${WORDPRESS_DB_USER:-wp_user}
+      WORDPRESS_DB_PASSWORD: ${WORDPRESS_DB_PASSWORD:-wp_password}
+      WORDPRESS_DB_NAME: ${WORDPRESS_DB_NAME:-wordpress}
+      SITE_TITLE: ${SITE_TITLE:-dev}
+      SITE_ADMIN_USER: ${SITE_ADMIN_USER:-admin}
+      SITE_ADMIN_PASSWORD: ${SITE_ADMIN_PASSWORD:-password}
+      SITE_ADMIN_EMAIL: ${SITE_ADMIN_EMAIL:-admin@localhost.com}
+      SITE_PLUGINS: ${SITE_PLUGINS:-}
+      SITE_URL: ${SITE_URL:-http://localhost:8080}
+    volumes:
+      - wordpress:/var/www/html
+      - ./:/var/www/html/wp-content/plugins/plugin-dev
+      - ./.devcontainer/rootfs/home/vscode/.bash_aliases:/home/vscode/.bash_aliases

@@ -1,0 +1,56 @@
+services:
+  wordpress:
+    image: wordpress
+    restart: always
+    ports:
+      - ${SITE_PORT:-8080}:80
+    entrypoint: "wordpress-entrypoint.sh"
+    command: "apache2-foreground"
+    environment:
+      WORDPRESS_DB_HOST: db
+      WORDPRESS_DB_NAME: ${WORDPRESS_DB_NAME:-wordpress}
+      WORDPRESS_DB_USER: ${WORDPRESS_DB_USER:-wp_user}
+      WORDPRESS_DB_PASSWORD: ${WORDPRESS_DB_PASSWORD:-wp_password}
+    volumes:
+      - wordpress:/var/www/html
+      - ./.devcontainer/rootfs/usr/local/bin/wordpress-entrypoint.sh:/usr/local/bin/wordpress-entrypoint.sh
+      - ./:/var/www/html/wp-content/plugins/plugin-dev
+
+  wpcli:
+    command: wp-cli-entrypoint # keep it running
+    image: wordpress:cli
+    user: xfs
+    environment:
+      WORDPRESS_DB_HOST: db
+      WORDPRESS_DB_USER: ${WORDPRESS_DB_USER:-wp_user}
+      WORDPRESS_DB_PASSWORD: ${WORDPRESS_DB_PASSWORD:-wp_password}
+      WORDPRESS_DB_NAME: ${WORDPRESS_DB_NAME:-wordpress}
+      SITE_TITLE: ${SITE_TITLE:-dev}
+      SITE_PORT: ${SITE_PORT:-8080}
+      SITE_ADMIN_USER: ${SITE_ADMIN_USER:-admin}
+      SITE_ADMIN_PASSWORD: ${SITE_ADMIN_PASSWORD:-password}
+      SITE_ADMIN_EMAIL: ${SITE_ADMIN_EMAIL:-admin@localhost.com}
+      SITE_PLUGINS: ${SITE_PLUGINS:-}
+      SITE_URL: ${SITE_URL:-http://localhost:8080}
+    volumes:
+      - wordpress:/var/www/html
+      - ./.devcontainer/rootfs/usr/local/bin/wait-for-it.sh:/usr/local/bin/wait-for-it
+      - ./.devcontainer/rootfs/usr/local/bin/wp-cli-entrypoint.sh:/usr/local/bin/wp-cli-entrypoint
+      - ./.devcontainer/rootfs/usr/local/bin/wp-setup.sh:/usr/local/bin/wp-setup
+      - ./.devcontainer/rootfs/usr/local/bin/wp-reset.sh:/usr/local/bin/wp-reset
+      - ./:/var/www/html/wp-content/plugins/plugin-dev
+
+  db:
+    image: mysql:5.7
+    restart: always
+    environment:
+      MYSQL_DATABASE: ${WORDPRESS_DB_NAME:-wordpress}
+      MYSQL_USER: ${WORDPRESS_DB_USER:-wp_user}
+      MYSQL_PASSWORD: ${WORDPRESS_DB_PASSWORD:-wp_password}
+      MYSQL_RANDOM_ROOT_PASSWORD: '1'
+    volumes:
+      - db:/var/lib/mysql
+
+volumes:
+  wordpress:
+  db:
